@@ -21,7 +21,7 @@ export const createCard = (req: Request, res: Response) => {
         res.status(badRequest).send({ message: 'Переданы некорректные данные при создании карточки' });
         return false;
       }
-      return res.status(internalServerError).send({ message: 'Произошла ошибка' });
+      return res.status(internalServerError).send({ message: 'На сервере произошла ошибка' });
     });
 };
 
@@ -33,7 +33,7 @@ export const getCards = (_req: Request, res: Response) => {
         res.status(badRequest).send({ message: 'Переданы некорректные данные при создании карточки' });
         return false;
       }
-      return res.status(internalServerError).send({ message: 'Произошла ошибка' });
+      return res.status(internalServerError).send({ message: 'На сервере произошла ошибка' });
     });
 };
 
@@ -47,7 +47,7 @@ export const deleteCard = (req: Request, res: Response) => {
         res.status(notFound).send({ message: 'Карточка с указанным _id не найдена' });
         return false;
       }
-      return res.status(internalServerError).send({ message: 'Произошла ошибка' });
+      return res.status(internalServerError).send({ message: 'На сервере произошла ошибка' });
     });
 };
 
@@ -70,7 +70,7 @@ export const likeCard = (req: Request, res: Response) => {
         res.status(notFound).send({ message: 'Передан несуществующий _id карточки' });
         return false;
       }
-      return res.status(internalServerError).send({ message: 'Произошла ошибка' });
+      return res.status(internalServerError).send({ message: 'На сервере произошла ошибка' });
     });
 };
 
@@ -93,6 +93,6 @@ export const dislikeCard = (req: Request, res: Response) => {
         res.status(notFound).send({ message: 'Передан несуществующий _id карточки' });
         return false;
       }
-      return res.status(internalServerError).send({ message: 'Произошла ошибка' });
+      return res.status(internalServerError).send({ message: 'На сервере произошла ошибка' });
     });
 };

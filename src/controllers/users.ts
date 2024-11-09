@@ -21,7 +21,7 @@ export const createUser = (req: Request, res: Response) => {
         res.status(badRequest).send({ message: 'Переданы некорректные данные при создании пользователя' });
         return false;
       }
-      return res.status(internalServerError).send({ message: 'Произошла ошибка' });
+      return res.status(internalServerError).send({ message: 'На сервере произошла ошибка' });
     });
 };
 
@@ -33,7 +33,7 @@ export const findUsers = (_req: Request, res: Response) => {
         res.status(badRequest).send({ message: 'Переданы некорректные данные при создании пользователя' });
         return false;
       }
-      return res.status(internalServerError).send({ message: 'Произошла ошибка' });
+      return res.status(internalServerError).send({ message: 'На сервере произошла ошибка' });
     });
 };
 
@@ -47,7 +47,7 @@ export const findUser = (req: Request, res: Response) => {
         res.status(notFound).send({ message: 'Пользователь по указанному _id не найден' });
         return false;
       }
-      return res.status(internalServerError).send({ message: 'Произошла ошибка' });
+      return res.status(internalServerError).send({ message: 'На сервере произошла ошибка' });
     });
 };
 
@@ -72,7 +72,7 @@ export const updateUser = (req: Request, res: Response) => {
         res.status(notFound).send({ message: 'Пользователь с указанным _id не найден' });
         return false;
       }
-      return res.status(internalServerError).send({ message: 'Произошла ошибка' });
+      return res.status(internalServerError).send({ message: 'На сервере произошла ошибка' });
     });
 };
 
@@ -97,6 +97,6 @@ export const updateAvatar = (req: Request, res: Response) => {
         res.status(notFound).send({ message: 'Пользователь с указанным _id не найден' });
         return false;
       }
-      return res.status(internalServerError).send({ message: 'Произошла ошибка' });
+      return res.status(internalServerError).send({ message: 'На сервере произошла ошибка' });
     });
 };
