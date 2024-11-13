@@ -1,12 +1,13 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 
 import Card from '../models/card';
 
-const badRequest = 400;
-const notFound = 404;
-const internalServerError = 500;
+import NotFoundError from '../errors/not-found-err';
+import BadRequest from '../errors/bad-request-err';
+import InternalServerError from '../errors/internal-server-err';
+import Forbidden from '../errors/forbidden-err';
 
-export const createCard = (req: Request, res: Response) => {
+export const createCard = (req: Request, res: Response, next: NextFunction) => {
   const { _id } = req.user;
   const { name, link } = req.body;
 
@@ -18,40 +19,53 @@ export const createCard = (req: Request, res: Response) => {
     .then((card) => res.send(card))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(badRequest).send({ message: 'Переданы некорректные данные при создании карточки' });
-        return false;
+        throw new BadRequest('Переданы некорректные данные при создании карточки');
       }
-      return res.status(internalServerError).send({ message: 'На сервере произошла ошибка' });
-    });
+      throw new InternalServerError('На сервере произошла ошибка');
+    }).catch(next);
 };
 
-export const getCards = (_req: Request, res: Response) => {
+export const getCards = (_req: Request, res: Response, next: NextFunction) => {
   Card.find({})
     .then((cards) => res.send(cards))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(badRequest).send({ message: 'Переданы некорректные данные при создании карточки' });
-        return false;
+        throw new BadRequest('Переданы некорректные данные при создании карточки');
       }
-      return res.status(internalServerError).send({ message: 'На сервере произошла ошибка' });
-    });
+      throw new InternalServerError('На сервере произошла ошибка');
+    }).catch(next);
 };
 
-export const deleteCard = (req: Request, res: Response) => {
+export const deleteCard = (req: Request, res: Response, next: NextFunction) => {
   const { cardId } = req.params;
+  const { _id } = req.user;
 
-  Card.findByIdAndDelete(cardId)
-    .then((card) => res.send(card))
+  Card.findById(cardId)
+    .then((card) => {
+      // eslint-disable-next-line no-underscore-dangle
+      if (card?.owner.toString() !== _id._id) {
+        return Promise.reject(new Forbidden('У вас нет прав на это действие'));
+      }
+
+      return Card.findByIdAndDelete(cardId)
+        .then((deletedCard) => {
+          if (!deletedCard) {
+            return Promise.reject(new NotFoundError('Карточка с указанным _id не найдена'));
+          }
+
+          return deletedCard;
+        });
+    })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(notFound).send({ message: 'Карточка с указанным _id не найдена' });
-        return false;
+        throw new NotFoundError('Карточка с указанным _id не найдена');
       }
-      return res.status(internalServerError).send({ message: 'На сервере произошла ошибка' });
-    });
+      throw new InternalServerError('На сервере произошла ошибка');
+    })
+    .catch(next);
 };
 
-export const likeCard = (req: Request, res: Response) => {
+export const likeCard = (req: Request, res: Response, next: NextFunction) => {
   const { _id } = req.user;
   const { cardId } = req.params;
 
@@ -63,18 +77,16 @@ export const likeCard = (req: Request, res: Response) => {
     .then((card) => res.send(card))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(badRequest).send({ message: 'Переданы некорректные данные для постановки/снятии лайка' });
-        return false;
+        throw new BadRequest('Переданы некорректные данные для постановки/снятии лайка');
       }
       if (err.name === 'CastError') {
-        res.status(notFound).send({ message: 'Передан несуществующий _id карточки' });
-        return false;
+        throw new NotFoundError('Передан несуществующий _id карточки');
       }
-      return res.status(internalServerError).send({ message: 'На сервере произошла ошибка' });
-    });
+      throw new InternalServerError('На сервере произошла ошибка');
+    }).catch(next);
 };
 
-export const dislikeCard = (req: Request, res: Response) => {
+export const dislikeCard = (req: Request, res: Response, next: NextFunction) => {
   const { _id } = req.user;
   const { cardId } = req.params;
 
@@ -86,13 +98,11 @@ export const dislikeCard = (req: Request, res: Response) => {
     .then((card) => res.send(card))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(badRequest).send({ message: 'Переданы некорректные данные для постановки/снятии лайка' });
-        return false;
+        throw new BadRequest('Переданы некорректные данные для постановки/снятии лайка');
       }
       if (err.name === 'CastError') {
-        res.status(notFound).send({ message: 'Передан несуществующий _id карточки' });
-        return false;
+        throw new NotFoundError('Передан несуществующий _id карточки');
       }
-      return res.status(internalServerError).send({ message: 'На сервере произошла ошибка' });
-    });
+      throw new InternalServerError('На сервере произошла ошибка');
+    }).catch(next);
 };

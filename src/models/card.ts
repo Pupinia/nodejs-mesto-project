@@ -22,6 +22,12 @@ const cardSchema = new mongoose.Schema<ICard>({
   link: {
     type: String,
     required: true,
+    validate: {
+      validator(avatar: string) {
+        return /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/.test(avatar);
+      },
+      message: 'Аватар не валидный',
+    },
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
