@@ -1,4 +1,4 @@
-export default class extends Error {
+export default class NotUniqueError extends Error {
   statusCode: number;
 
   constructor(message: string) {

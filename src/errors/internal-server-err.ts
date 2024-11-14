@@ -1,4 +1,4 @@
-export default class extends Error {
+export default class InternalServerError extends Error {
   statusCode: number;
 
   constructor(message: string) {
