@@ -2,8 +2,9 @@ import express, {
   NextFunction,
   Request, Response,
 } from 'express';
+
 import mongoose from 'mongoose';
-import { errors } from 'celebrate';
+import { errors, celebrate, Joi } from 'celebrate';
 
 import {
   PORT, HOST, NAME_DB, PORT_DB,
@@ -14,6 +15,7 @@ import cardRoutes from './routes/cards';
 
 import { login, createUser } from './controllers/users';
 import auth from './middlewares/auth';
+import notFound from './middlewares/notFound';
 import { requestLogger, errorLogger } from './middlewares/logger';
 
 const app = express();
@@ -25,13 +27,26 @@ app.use(express.json());
 
 app.use(requestLogger);
 
-app.post('/signup', createUser);
-app.post('/signin', login);
+app.post('/signup', celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().required(),
+    password: Joi.string().required(),
+  }),
+}), createUser);
+
+app.post('/signin', celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().required(),
+    password: Joi.string().required(),
+  }),
+}), login);
 
 app.use(auth);
 
 app.use('/users', userRoutes);
 app.use('/cards', cardRoutes);
+
+app.use(notFound);
 
 app.use(errorLogger);
 
@@ -39,7 +54,6 @@ app.use(errors());
 
 // eslint-disable-next-line no-unused-vars
 app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
-  // если у ошибки нет статуса, выставляем 500
   const { statusCode = 500, message } = err;
 
   res
