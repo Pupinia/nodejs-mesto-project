@@ -6,7 +6,6 @@ import User from '../models/user';
 
 import NotFoundError from '../errors/not-found-err';
 import BadRequest from '../errors/bad-request-err';
-import InternalServerError from '../errors/internal-server-err';
 import NotUnique from '../errors/not-unique-err';
 import AutorizationError from '../errors/autorization-err';
 
@@ -28,39 +27,36 @@ export const createUser = (req: Request, res: Response, next: NextFunction) => {
     .then((user) => res.send(user))
     .catch((err) => {
       if (err.code === notUniqueCode) {
-        throw new NotUnique('Переданный Email не уникальный');
+        next(new NotUnique('Переданный Email не уникальный'));
+      } else if (err.name === 'ValidationError') {
+        next(new BadRequest('Переданы некорректные данные при создании пользователя'));
+      } else {
+        next(err);
       }
-      if (err.name === 'ValidationError') {
-        throw new BadRequest('Переданы некорректные данные при создании пользователя');
-      }
-      throw new InternalServerError('На сервере произошла ошибка');
-    })
-    .catch(next);
+    });
 };
 
 export const findUsers = (_req: Request, res: Response, next: NextFunction) => {
   User.find({})
     .then((users) => res.send(users))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        throw new BadRequest('Переданы некорректные данные при создании пользователя');
-      }
-      throw new InternalServerError('На сервере произошла ошибка');
-    })
-    .catch(next);
+      next(err);
+    });
 };
 
 export const findUser = (req: Request, res: Response, next: NextFunction) => {
   const { userId } = req.params;
 
   User.findById(userId)
-    .then((user) => res.send(user))
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        throw new NotFoundError('Пользователь по указанному _id не найден');
+    .then((user) => {
+      if (!user) {
+        next(new NotFoundError('Карточка с указанным _id не найдена'));
       }
-      throw new InternalServerError('На сервере произошла ошибка');
-    }).catch(next);
+      return res.send(user);
+    })
+    .catch((err) => {
+      next(err);
+    });
 };
 
 export const updateUser = (req: Request, res: Response, next: NextFunction) => {
@@ -72,18 +68,17 @@ export const updateUser = (req: Request, res: Response, next: NextFunction) => {
     { name, about },
     {
       new: true,
+      runValidators: true,
     },
   )
     .then((user) => res.send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        throw new BadRequest('Переданы некорректные данные при обновлении профиля');
+        next(new BadRequest('Переданы некорректные данные при обновлении профиля'));
+      } else {
+        next(err);
       }
-      if (err.name === 'CastError') {
-        throw new NotFoundError('Пользователь с указанным _id не найден');
-      }
-      throw new InternalServerError('На сервере произошла ошибка');
-    }).catch(next);
+    });
 };
 
 export const updateAvatar = (req: Request, res: Response, next: NextFunction) => {
@@ -95,18 +90,17 @@ export const updateAvatar = (req: Request, res: Response, next: NextFunction) =>
     { avatar },
     {
       new: true,
+      runValidators: true,
     },
   )
     .then((user) => res.send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        throw new BadRequest('Переданы некорректные данные при обновлении профиля');
+        next(new BadRequest('Переданы некорректные данные при обновлении профиля'));
+      } else {
+        next(err);
       }
-      if (err.name === 'CastError') {
-        throw new NotFoundError('Пользователь с указанным _id не найден');
-      }
-      throw new InternalServerError('На сервере произошла ошибка');
-    }).catch(next);
+    });
 };
 
 export const login = (req: Request, res: Response, next: NextFunction) => {
@@ -114,30 +108,19 @@ export const login = (req: Request, res: Response, next: NextFunction) => {
 
   return User.findUserByCredentials(email, password)
     .then(({ _id }) => {
-      // TODO: Мы рекомендуем записывать JWT в httpOnly куку
-      // TODO: В ответ на успешную авторизацию контроллер _id с
-      // login возвращает клиенту созданный токен — это может быть тело ответа
-      //  или заголовок Set-Cookie ;
       const token = jwt.sign({ _id }, 'some-secret-key', { expiresIn: '7d' });
 
       res.send({ token });
     })
     .catch(() => {
-      // Передавать правильную ошибку
-      throw new AutorizationError('Ошибка авторизации');
-    }).catch(next);
+      next(new AutorizationError('Ошибка авторизации'));
+    });
 };
 
 export const getUser = (req: Request, res: Response, next: NextFunction) => {
   const { _id } = req.user;
 
   User.findById(_id)
-    .then((user) => {
-      if (!user) {
-        throw new NotFoundError('Нет пользователя с таким id');
-      }
-
-      res.send(user);
-    })
+    .then((user) => res.send(user))
     .catch(next);
 };

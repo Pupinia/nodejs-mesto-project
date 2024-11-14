@@ -25,7 +25,7 @@ router.patch('/me', celebrate({
   body: Joi.object().keys({
     name: Joi.string().required(),
     about: Joi.string().required(),
-  }).unknown(true),
+  }),
 }), updateUser);
 
 router.patch('/me/avatar', celebrate({

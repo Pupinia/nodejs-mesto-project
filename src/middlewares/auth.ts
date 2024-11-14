@@ -17,7 +17,7 @@ export default (req: Request, res: Response, next: NextFunction) => {
 
     const token = authorization.replace('Bearer ', '');
 
-    const payload: IJwtPayload = jwt.verify(token, 'some-secret-key') as IJwtPayload;
+    const payload = jwt.verify(token, 'some-secret-key') as IJwtPayload;
 
     req.user = payload;
   } catch (err) {
